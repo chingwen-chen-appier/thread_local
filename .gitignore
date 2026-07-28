@@ -1,0 +1,8 @@
+# cmake build artifacts (run.sh builds into build/<BuildType>)
+build/
+
+# local cmake presets, not committed
+CMakeUserPresets.json
+
+# macOS
+.DS_Store
