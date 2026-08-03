@@ -12,4 +12,15 @@ target_link_libraries(dynamic_app PRIVATE foo pthread)
 
 
 add_executable(dlopen_app main_dlopen.cpp)
-target_link_libraries(dlopen_app PRIVATE dl pthread)
+target_link_libraries(dlopen_app PRIVATE pthread)
+
+if(APPLE)
+    # dlopen lives in libSystem; there is no libdl to link.
+    # A bare leaf name is not resolved via rpath or cwd by dyld, so give
+    # dlopen() a @loader_path-relative path instead.
+    target_compile_definitions(dlopen_app PRIVATE
+                               LIBFOO_NAME="@loader_path/libfoo.dylib")
+else()
+    target_link_libraries(dlopen_app PRIVATE dl)
+    target_compile_definitions(dlopen_app PRIVATE LIBFOO_NAME="libfoo.so")
+endif()

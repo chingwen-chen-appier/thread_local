@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cstring>
 
 
 struct LargeTLS
@@ -16,5 +17,7 @@ thread_local LargeTLS tls_object;
 extern "C"
 void foo()
 {
+    memset(tls_object.buffer, 1, sizeof tls_object.buffer);
+
     printf("[foo] tls address = %p\n", (void*)&tls_object);
 }

@@ -5,29 +5,18 @@
 #include <thread>
 
 
-void worker()
+#ifndef LIBFOO_NAME
+#define LIBFOO_NAME "libfoo.so"
+#endif
+
+
+void worker(void (*foo)())
 {
     printMemory("thread start");
-
-    void* handle = dlopen("libfoo.so", RTLD_NOW);
-
-    if (!handle)
-    {
-        printf("dlopen error: %s\n", dlerror());
-        return;
-    }
-
-    printMemory("after dlopen");
-
-    auto foo = (void (*)())dlsym(handle, "foo");
 
     foo();
 
     printMemory("after foo");
-
-    dlclose(handle);
-
-    printMemory("after dlclose");
 }
 
 
@@ -35,9 +24,31 @@ int main()
 {
     printMemory("program start");
 
-    std::thread t(worker);
+    void* handle = dlopen(LIBFOO_NAME, RTLD_NOW);
+
+    if (!handle)
+    {
+        printf("dlopen error: %s\n", dlerror());
+        return 1;
+    }
+
+    printMemory("after dlopen");
+
+    auto foo = (void (*)())dlsym(handle, "foo");
+
+    if (!foo)
+    {
+        printf("dlsym error: %s\n", dlerror());
+        return 1;
+    }
+
+    std::thread t(worker, foo);
 
     t.join();
+
+    dlclose(handle);
+
+    printMemory("after dlclose");
 
     printMemory("program end");
 }
